@@ -3,6 +3,9 @@ library(plyr)
 library(dplyr)
 library(data.table)
 library(mice)
+library(bnlearn)
+library(rpart)
+library(rpart.plot)
 
 # Load tables with needed data
 adm <- data.frame(read.csv(file = "/Users/Xinmi/git/MLforHC_FinalProject/adm.csv", header = TRUE))
@@ -126,12 +129,148 @@ md.pattern(df4)
 md.pattern(df5)
 # By comparing the missing patterns of data with/without imputation, 61 patients still have 
 # missing values unable to be imputed, so they are dropped.
-df6 <- na.omit(df5)
+df6 <- na.omit(df5) %>%
+  select(-SUBJECT_ID, -DIAGNOSIS, -SHORT_TITLE)
 
 # Get train and test sets
 set.seed(123456789)
-ordering <- sample(1:nrow(df6))
-train <- df6[ordering[1:round(0.5*nrow(df6))],]
-test <- df6[-ordering[1:round(0.5*nrow(df6))], ]
+index <- sample(1:nrow(df6))[1:floor(0.5*nrow(df6))]
+train <- df6[index, ]
+test <- df6[-index, ]
+
+df6.d <- discretize(df6)
+train.d <- df6.d[index, ]
+test.d <- df6.d[-index, ]
+
+# Remove the row in train/test set with level of ICD9_CODE not seen in the other set (unable to predict in bayes learn) and drop the unused levels. To be fair, all train and test sets will drop the same rows.
+test.drop <- 0
+for (i in 1:nrow(test.d)) {
+  if (!(test.d[i,3] %in% train.d[,3])) {
+    test.drop <- c(test.drop, i)
+  }
+}
 
 
+if (length(test.drop)>1) {
+  test.d2 <- test.d[-test.drop[-1],] %>%
+    droplevels.data.frame
+  test2 <- test[-test.drop[-1],]
+} else {
+  test.d2 <- test.d %>%
+    droplevels.data.frame
+  test2 <- test
+}  
+
+train.drop <- 0
+for (j in 1:nrow(train.d)) {
+  if (!(train.d[j,3] %in% test.d2[,3])) {
+    train.drop <- c(train.drop, j)
+  }
+}
+
+if (length(train.drop)>1) {
+  train.d2 <- train.d[-train.drop[-1],] %>%
+    droplevels.data.frame
+  train2 <- train[-train.drop[-1],]
+} else {
+  train.d2 <- train.d %>%
+    droplevels.data.frame
+  train2 <- test
+} 
+
+# Death rate in train and test sets
+round((sum(as.numeric(train2$EXPIRE_FLAG == 1)))/nrow(train2), 2)
+round((sum(as.numeric(test2$EXPIRE_FLAG == 1)))/nrow(test2), 2)
+
+
+# Build models
+# Logistic Regression
+lr <- glm(EXPIRE_FLAG == 1 ~ .,
+          family=binomial(link="logit"), data = train2)
+summary(lr)
+
+predict.lr <- predict(lr, test2)
+
+summary.lr <- as.vector(predict.lr>=0.5) %>%
+  table(test2$EXPIRE_FLAG)
+summary.lr
+
+accuracy.lr <- (summary.lr[1,1]+summary.lr[2,2])/sum(colSums(summary.lr))
+error.lr <- 1 - accuracy.lr
+CI.lr.lower <- accuracy.lr - 1.96 * sqrt(error.lr*accuracy.lr/sum(colSums(summary.lr)))
+CI.lr.upper <- accuracy.lr + 1.96 * sqrt(error.lr*accuracy.lr/sum(colSums(summary.lr)))
+
+lr.report <- data.frame(accuracy.lr, CI.lr.lower, CI.lr.upper)
+lr.report
+
+# Naive Bayes
+nb <- naive.bayes(train.d2, "EXPIRE_FLAG")
+fitted.nb <- bn.fit(nb, train.d2)
+summary(nb)
+
+predict.nb <- predict(fitted.nb, test.d2, prob = TRUE)
+
+summary.nb <- predict(fitted.nb, test.d2) %>% 
+  table(test.d2$EXPIRE_FLAG)
+summary.nb
+
+accuracy.nb <- (summary.nb[1,1]+summary.nb[2,2])/sum(colSums(summary.nb))
+error.nb <- 1 - accuracy.nb
+CI.nb.lower <- accuracy.nb - 1.96 * sqrt(error.nb*accuracy.nb/sum(colSums(summary.nb)))
+CI.nb.upper <- accuracy.nb + 1.96 * sqrt(error.nb*accuracy.nb/sum(colSums(summary.nb)))
+
+nb.report <- data.frame(accuracy.nb, CI.nb.lower, CI.nb.upper)
+nb.report
+
+# Tree Augmented Naive Bayes
+tan <- tree.bayes(train.d2, "EXPIRE_FLAG")
+fitted.tan <- bn.fit(tan, train.d2)
+summary(tan)
+
+predict.tan <- predict(fitted.tan, test.d2, prob = TRUE)
+
+summary.tan <- predict(fitted.tan, test.d2) %>% 
+  table(test.d2$EXPIRE_FLAG)
+summary.tan
+
+accuracy.tan <- (summary.tan[1,1]+summary.tan[2,2])/sum(colSums(summary.tan))
+error.tan <- 1 - accuracy.tan
+CI.tan.lower <- accuracy.tan - 1.96 * sqrt(error.tan*accuracy.tan/sum(colSums(summary.tan)))
+CI.tan.upper <- accuracy.tan + 1.96 * sqrt(error.tan*accuracy.tan/sum(colSums(summary.tan)))
+
+tan.report <- data.frame(accuracy.tan, CI.tan.lower, CI.tan.upper)
+tan.report
+
+# Decision Tree
+# Build the tree with the loosest constraints. 
+dt <- rpart(EXPIRE_FLAG ~ ., data = train.d2, control=rpart.control(minsplit=2, minbucket=1, cp=0.001))
+printcp(dt)
+print(dt)
+plotcp(dt)
+
+# Prune the tree to minimize the cross-validation error.
+dt2 <- prune(dt, cp = dt$cptable[which.min(dt$cptable[,"xerror"]),"CP"])
+printcp(dt2)
+print(dt2)
+plotcp(dt2)
+
+# Plot the tree.
+rpart.plot(dt2)
+
+# Test the model.
+predict.dt <- predict(dt2, test.d2) %>%
+  as.data.frame
+
+prediction.dt <- apply(predict.dt, 1, function(x){x[2] > x[1]})
+
+summary.dt <- as.vector(prediction.dt) %>% 
+  table(test.d2$EXPIRE_FLAG)
+summary.dt
+
+accuracy.dt <- (summary.dt[1,1]+summary.dt[2,2])/sum(colSums(summary.dt))
+error.dt <- 1 - accuracy.dt
+CI.dt.lower <- accuracy.dt - 1.96 * sqrt(error.dt*accuracy.dt/sum(colSums(summary.dt)))
+CI.dt.upper <- accuracy.dt + 1.96 * sqrt(error.dt*accuracy.dt/sum(colSums(summary.dt)))
+
+dt.report <- data.frame(accuracy.dt, CI.dt.lower, CI.dt.upper)
+dt.report
