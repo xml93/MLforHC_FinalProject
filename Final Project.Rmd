@@ -1,10 +1,25 @@
-# Load libraries
+---
+title: "MLHC Final Project"
+author: "Xinmi Li"
+date: "April 25, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load libraries
+```{r}
 library(plyr)
 library(dplyr)
 library(data.table)
 library(mice)
+library(Amelia)
+```
 
-# Load tables with needed data
+Load tables with needed data
+```{r}
 adm <- data.frame(read.csv(file = "/Users/Xinmi/git/MLforHC_FinalProject/adm.csv", header = TRUE))
 adm.original <- data.frame(read.csv(file = "/Users/Xinmi/git/MLforHC_FinalProject/ADMISSIONS.csv", header = TRUE))
 ds <- data.frame(read.csv(file = "/Users/Xinmi/git/MLforHC_FinalProject/ds.csv", header = TRUE))
@@ -14,7 +29,11 @@ rx <- fread("/Users/Xinmi/git/MLforHC_FinalProject/PRESCRIPTIONS.csv", header = 
   select(SUBJECT_ID, HADM_ID, DRUG, FORMULARY_DRUG_CD)%>% 
   filter(SUBJECT_ID %in% surgpts$SUBJECT_ID)
 cesurg <- fread('/Users/Xinmi/git/MLforHC_FinalProject/cesurg.csv', header = T, sep = ',')
+```
 
+
+Data pre-processing
+```{r}
 # Clean the table to leave only the most recent admission for each patient
 adm2 <- adm.original %>% 
   filter(SUBJECT_ID %in% adm$SUBJECT_ID) %>% 
@@ -93,7 +112,11 @@ df <- pts %>%
   left_join(cesurg2.T.aggr, by="SUBJECT_ID") %>%
   left_join(cesurg2.BP.aggr, by="SUBJECT_ID") %>%
   left_join(cesurg2.HR.aggr, by="SUBJECT_ID") 
+```
 
+
+Process missing values
+```{r, cache=TRUE}
 # Check the missing values
 md.pattern(df)
 
@@ -133,5 +156,8 @@ set.seed(123456789)
 ordering <- sample(1:nrow(df6))
 train <- df6[ordering[1:round(0.5*nrow(df6))],]
 test <- df6[-ordering[1:round(0.5*nrow(df6))], ]
+```
 
-
+Build models
+```{r, cache=TRUE}
+```
