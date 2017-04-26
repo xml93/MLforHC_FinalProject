@@ -1,11 +1,13 @@
 # Load libraries
 library(plyr)
 library(dplyr)
+library(ggplot2)
 library(data.table)
 library(mice)
 library(bnlearn)
 library(rpart)
 library(rpart.plot)
+library(randomForest)
 
 # Load tables with needed data
 adm <- data.frame(read.csv(file = "/Users/Xinmi/git/MLforHC_FinalProject/adm.csv", header = TRUE))
@@ -203,6 +205,7 @@ CI.lr.upper <- accuracy.lr + 1.96 * sqrt(error.lr*accuracy.lr/sum(colSums(summar
 lr.report <- data.frame(accuracy.lr, CI.lr.lower, CI.lr.upper)
 lr.report
 
+
 # Naive Bayes
 nb <- naive.bayes(train.d2, "EXPIRE_FLAG")
 fitted.nb <- bn.fit(nb, train.d2)
@@ -210,7 +213,7 @@ summary(nb)
 
 predict.nb <- predict(fitted.nb, test.d2, prob = TRUE)
 
-summary.nb <- predict(fitted.nb, test.d2) %>% 
+summary.nb <- predict.nb %>% 
   table(test.d2$EXPIRE_FLAG)
 summary.nb
 
@@ -229,7 +232,7 @@ summary(tan)
 
 predict.tan <- predict(fitted.tan, test.d2, prob = TRUE)
 
-summary.tan <- predict(fitted.tan, test.d2) %>% 
+summary.tan <- predict.tan %>% 
   table(test.d2$EXPIRE_FLAG)
 summary.tan
 
@@ -273,4 +276,26 @@ CI.dt.lower <- accuracy.dt - 1.96 * sqrt(error.dt*accuracy.dt/sum(colSums(summar
 CI.dt.upper <- accuracy.dt + 1.96 * sqrt(error.dt*accuracy.dt/sum(colSums(summary.dt)))
 
 dt.report <- data.frame(accuracy.dt, CI.dt.lower, CI.dt.upper)
+dt.report
+
+# Random Forest
+set.seed(123456789)
+rf <- randomForest(EXPIRE_FLAG ~ ., data = train.d2, importance = TRUE, ntree = 1000)
+varImpPlot(rf, main = "Importance of variables")
+
+predict.rf <- predict(rf, test.d2)
+
+summary.rf <- predict.rf %>% 
+  table(test.d2$EXPIRE_FLAG)
+summary.rf
+
+accuracy.rf <- (summary.rf[1,1]+summary.rf[2,2])/sum(colSums(summary.rf))
+error.rf <- 1 - accuracy.rf
+CI.rf.lower <- accuracy.rf - 1.96 * sqrt(error.rf*accuracy.rf/sum(colSums(summary.rf)))
+CI.rf.upper <- accuracy.rf + 1.96 * sqrt(error.rf*accuracy.rf/sum(colSums(summary.rf)))
+
+rf.report <- data.frame(accuracy.rf, CI.rf.lower, CI.rf.upper)
+rf.report
+
+
 dt.report

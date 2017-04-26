@@ -13,12 +13,15 @@ Load libraries
 ```{r}
 library(plyr)
 library(dplyr)
+library(ggplot2)
 library(data.table)
 library(mice)
 library(Amelia)
 library(bnlearn)
 library(rpart)
 library(rpart.plot)
+library(randomForest)
+library(caret)
 ```
 
 Load tables with needed data
@@ -219,7 +222,9 @@ CI.lr.upper <- accuracy.lr + 1.96 * sqrt(error.lr*accuracy.lr/sum(colSums(summar
 
 lr.report <- data.frame(accuracy.lr, CI.lr.lower, CI.lr.upper)
 lr.report
+```
 
+```{r, cache=TRUE}
 # Naive Bayes
 nb <- naive.bayes(train.d2, "EXPIRE_FLAG")
 fitted.nb <- bn.fit(nb, train.d2)
@@ -227,7 +232,7 @@ summary(nb)
 
 predict.nb <- predict(fitted.nb, test.d2, prob = TRUE)
 
-summary.nb <- predict(fitted.nb, test.d2) %>% 
+summary.nb <- predict.nb %>% 
   table(test.d2$EXPIRE_FLAG)
 summary.nb
 
@@ -238,15 +243,18 @@ CI.nb.upper <- accuracy.nb + 1.96 * sqrt(error.nb*accuracy.nb/sum(colSums(summar
 
 nb.report <- data.frame(accuracy.nb, CI.nb.lower, CI.nb.upper)
 nb.report
+```
 
+```{r, cache=TRUE}
 # Tree Augmented Naive Bayes
 tan <- tree.bayes(train.d2, "EXPIRE_FLAG")
 fitted.tan <- bn.fit(tan, train.d2)
 summary(tan)
 
+
 predict.tan <- predict(fitted.tan, test.d2, prob = TRUE)
 
-summary.tan <- predict(fitted.tan, test.d2) %>% 
+summary.tan <- predict.tan %>% 
   table(test.d2$EXPIRE_FLAG)
 summary.tan
 
@@ -257,7 +265,9 @@ CI.tan.upper <- accuracy.tan + 1.96 * sqrt(error.tan*accuracy.tan/sum(colSums(su
 
 tan.report <- data.frame(accuracy.tan, CI.tan.lower, CI.tan.upper)
 tan.report
+```
 
+```{r, cache=TRUE}
 # Decision Tree
 # Build the tree with the loosest constraints. 
 dt <- rpart(EXPIRE_FLAG ~ ., data = train.d2, control=rpart.control(minsplit=2, minbucket=1, cp=0.001))
@@ -271,8 +281,9 @@ printcp(dt2)
 print(dt2)
 plotcp(dt2)
 
-# Plot the tree.
+# Plot the tree and show variable importance
 rpart.plot(dt2)
+as.vector(varImp(dt2))$Overall
 
 # Test the model.
 predict.dt <- predict(dt2, test.d2) %>%
@@ -291,4 +302,34 @@ CI.dt.upper <- accuracy.dt + 1.96 * sqrt(error.dt*accuracy.dt/sum(colSums(summar
 
 dt.report <- data.frame(accuracy.dt, CI.dt.lower, CI.dt.upper)
 dt.report
+```
+
+```{r, cache=TRUE}
+# Random Forest
+set.seed(123456789)
+rf <- randomForest(EXPIRE_FLAG ~ ., data = train.d2, importance = TRUE, ntree = 1000)
+varImpPlot(rf, main = "Importance of variables")
+
+predict.rf <- predict(rf, test.d2)
+
+summary.rf <- predict.rf %>% 
+  table(test.d2$EXPIRE_FLAG)
+summary.rf
+
+accuracy.rf <- (summary.rf[1,1]+summary.rf[2,2])/sum(colSums(summary.rf))
+error.rf <- 1 - accuracy.rf
+CI.rf.lower <- accuracy.rf - 1.96 * sqrt(error.rf*accuracy.rf/sum(colSums(summary.rf)))
+CI.rf.upper <- accuracy.rf + 1.96 * sqrt(error.rf*accuracy.rf/sum(colSums(summary.rf)))
+
+rf.report <- data.frame(accuracy.rf, CI.rf.lower, CI.rf.upper)
+rf.report
+```
+
+```{r, cache=TRUE}
+#
+```
+
+
+Model comparison
+```{r}
 ```
