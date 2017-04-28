@@ -22,7 +22,7 @@
 
 \begin{document}
 
-\title{Heinz 95-845: Forecasting Postoperative Mortality after General Surgery Based on MIMIC III Data on \\Machine Learning for Health Care}
+\title{Forecasting Postoperative Mortality after General Surgery Based on MIMIC III Data\\ Heinz 95-845: Machine Learning for Health Care}
 
 \author{\name Xinmi Li \email xinmil@andrew.cmu.edu \\
        \addr Heinz College\\
@@ -120,6 +120,7 @@ After checking the missing pattern of each colomn, colomns with over 50\% missin
 Since the existing models used to predict the mortality each focuses on a specific disease or condition and the models built in this study are more general and relatively novel in providing general guidance for postoperative care, models in this study are not compared to existing models. Instead, the models themselves are compared against each other to evaluate the performance, by using accuracy, ROC curve, and PR curve.
 
 \section{Results} \label{results}
+The variable importance for each algorithm is showed repectively in each subsection, except for Naive Bayes and Tree Augmented Naive Bayes (no method to show the variable importance), to find the useful indicators of postoperative mortality. And the performance of each algorithm is evaluated and compared to decide on the best model.
 
 \subsection{Results on Logistic Regression} 
 After 2 rounds of training the Logistic Regression model, the final model has the features and importance as plotted below.
@@ -127,7 +128,7 @@ After 2 rounds of training the Logistic Regression model, the final model has th
 \begin{figure}[htbp]
   \centering 
   \includegraphics[height=7cm, width=14cm]{fig5} 
-  \caption{The variable importance in predicting mortality}
+  \caption{The variable importance in predicting mortality of Logistic Regression}
   \label{fig5} 
 \end{figure} 
 
@@ -148,20 +149,71 @@ From the plot we can know that the importance of all variables in this model is 
   \end{tabular}
 \end{table}
 
-Based on this model, features of the patient's resporitory rate, oxygen saturation, temperature, and whether the patient's diagnosis is related to Endocrine, Nutritional, Metabolic, Immunity / Circulatory System / Digestive System are of significance in predicting post-surgery death.
+Based on this model, features of the patient's respiratory rate, oxygen saturation, temperature, and whether the patient's diagnosis is related to Endocrine, Nutritional, Metabolic, Immunity / Circulatory System / Digestive System are of significance in predicting post-surgery death.
 
-\subsection{Results on Naive Bayes} 
+\subsection{Results on Desicion Tree} 
+The Decision Tree after pruning is shown below.
 
-Did more than one experiment type?
+\begin{figure}[htbp]
+  \centering 
+  \includegraphics[height=7cm, width=14cm]{fig6} 
+  \caption{Decision Tree}
+  \label{fig6} 
+\end{figure} 
+
+\begin{figure}[htbp]
+  \centering 
+  \includegraphics[height=7cm, width=14cm]{fig7} 
+  \caption{The variable importance in predicting mortality of Decision Tree}
+  \label{fig7} 
+\end{figure} 
+
+Here we can find that ICD-9 code (diagnosis group) and the patient's respiratory rate and oxygen saturation have a really high contribution to the patient's mortality. Also, some medications such as Magnesium Sulfate and Depakote are also strong indicators.
+
+\subsection{Results on Random Forest}
+
+\begin{figure}[htbp]
+  \centering 
+  \includegraphics[height=7cm, width=14cm]{fig8} 
+  \caption{The variable importance in predicting mortality of Random Forest}
+  \label{fig8} 
+\end{figure}
+
+Here Random Forest uses 1000 as the number of trees and have votes on all trees to decide the contribution of each variable to the outcome. We can find that diagnosis, patient's temperature, oxygen saturation, and respiratory rate are still the top 4 variables that contribute the most to postoperative mortality, both on accuracy and Gini. Other features are not so significant or have inconsistent contribution regarding the model accuracy and Gini.
+
+\subsection{Model Evaluation and Comparison}
+\begin{table}[htbp]
+  \centering 
+  \begin{tabular}{|c|c|c|} 
+     Method & Accuracy & 95\% Confidence Interval\\ 
+    \hline \\[-11pt]
+    Logistic Regression & 0.6473 & 0.6215~0.6732\\ 
+    Naive Bayes & 0.6588 & 0.6331~0.6845\\ 
+    Tree Augmented Naive Bayes & 0.6321 & 0.6059~0.6582\\
+    Decision Tree & 0.6580 & 0.6323~0.6837\\
+    Random Forest & 0.6351 & 0.6090~0.6612\\ \hline 
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering 
+  \includegraphics[height=8cm, width=15cm]{fig9} 
+  \caption{ROC Curve}
+  \label{fig9} 
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering 
+  \includegraphics[height=8cm, width=15cm]{fig10} 
+  \caption{PR Curve}
+  \label{fig10} 
+\end{figure}
+
+Based on accuracy, Naive Bayes and Decision Tree outperform other models since they have a higher accuracy and also confidence interval. However, when looking at the ROC and PR curves, Logistic Reggression has the curve dominates other algorithms. Logistic Regression also has a relatively high accuracy. Combining the three measures, Logistic Regression is an effective model to predict post-surgery death and the features selected in this model are useful indicators.
 
 \section{Discussion and Related Work} 
 
-This is where you characterize the outcomes of your method and draw conclusions from you experiment.
-The discussion will build upon the Introduction and the Results sections to synthesize where your contribution brings the field. Discuss any implications of your work. 
-Discuss limitations of your work.
-Are there situations where you should and should not use your method.
-What implications are there on policy making, clinical decision making, or future research activities?
-Remember to contextualize your work with respect to related work and provide references.
+
 
 \section{Conclusion} 
 Summarize your work one more time, this time assuming the reader has read your paper.
