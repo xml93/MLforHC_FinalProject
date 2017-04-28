@@ -33,7 +33,7 @@
 \maketitle
 
 \begin{abstract}
-  This paper aims to use machine learning models to predict postoperative mortality for patients in intensive care units (ICU) after general surgery. Multiple machine learning algorithms are trained and tested with the data collected in Multiparameter Intelligent Monitoring in Intensive Care III (MIMIC III) database. Through these models, items considered to be significant in post-surgery care are examined and their contribution to post-surgery death are disccussed in this paper. In this paper, the performance of each algorithm is also compared with each other, to suggest on the most useful and reliable model that could be used in future postoperative mortality prediction.
+  This study aims to use machine learning models to predict postoperative mortality for patients in intensive care units (ICU) after general surgery. Multiple machine learning algorithms are trained and tested with the data collected in Multiparameter Intelligent Monitoring in Intensive Care III (MIMIC III) database. Through these models, items considered to be significant in post-surgery care are examined and their contribution to post-surgery death are disccussed in this study. In this study, the performance of each algorithm is also compared with each other, to suggest on the most useful and reliable model that could be used in future postoperative mortality prediction.
 \end{abstract}
 
 \section{Introduction}
@@ -52,47 +52,65 @@ With more and more emphases on heath care quality and patient safety, lowering t
 
 \begin{figure}[htbp]
   \centering 
-  \includegraphics[height=10cm, width=15cm]{fig1} 
+  \includegraphics[height=8cm, width=12cm]{fig1} 
   \caption{Death Rate From Complications of Medical and Surgical Care Among Adults Aged ≥45 Years, by Age Group — United States, 1999~2009}
   \label{fig1} 
 \end{figure} 
 
-\section{Your Model Name Here} \label{model}
-This section describes your model and references the notation you introduced in the Background Section. \textbf{Figures are definitely helpful here}, so that someone who is in your area can visualize how your approach is novel, and someone who is not in your area can visualize what you are doing.
+\section{Logistic Regression, Naive Bayes, Tree Augmented Naive Bayes, Decision Tree, and Random Forest Models} \label{model}
+In this study, multiple machine learning models are used in R programming with packages: Logistic Regression, Naive Bayes, Tree Augmented Naive Bayes, Decision Tree, and Random Forest.
 
-If you introduce new mathematical or statistical methods, use the terminology you defined in Section \ref{background} and define your model. Give the technical details and remember: do be precise and do be concise.
+After training and testing all models, they are evaluated based on the accuracy of classification the outcome, receiver operating characteristic curve (ROC curve), and precision-recall curve (PR curve).
 
-If you are combining existing methods, then you don't need to provide a ton of detail: feel free to just cite other packages and papers and tell us how you put them together.  
+\begin{figure}[htbp]
+  \centering 
+  \includegraphics[height=7cm, width=7cm]{fig2} 
+  \caption{ROC Curve; source: https://www.medcalc.org/manual/roc-curves.php}
+  \label{fig2} 
+\end{figure} 
 
-If you developed new code that does not (should not) contain sensitive or private information, include a reference, e.g.:
+\begin{figure}[htbp]
+  \centering 
+  \caption{PR Curve; source: https://www.quora.com/What-is-Precision-Recall-PR-curve}
+  \includegraphics[height=7cm, width=7cm]{fig3} 
+  \label{fig3} 
+\end{figure} 
 
-`` Code is available at \url{http://my.github.page.com} ''
+\[Accuracy = \frac{True Positive + True Negative}{True Positive + False Positive + True Negative +False Negative}\]
+
+\[Precision = \frac{True Positive}{True Positive + False Positive}\]
+
+\[Recall = \frac{True Positive}{True Positive + False Negative}\]
+
+Code is available at \url{https://github.com/xml93/MLforHC_FinalProject}.
 
 \section{Experimental Setup} \label{experiment}
-\emph{Note: if the paper is more about the application than the method, this Section may be entitled Methods and appear before Section \ref{model}}
-
-By reading the Experimental Setup, your reader should have the information necessary to replicate the study.
-
-Describe the cohort/data. Provide information about the population, the inclusion and exclusion criteria, what data were extracted, how features were processed, etc. In fact, you may want the following headings. \textbf{A flow chart can be very helpful} to illustrate the experimental setup, study design, inclusion/exclusion process, etc.
-
-For more clinical application papers, each of the sections above might be several paragraphs or pages because we really want to understand the setting.
 
 \subsection{Cohort Selection} 
-Describe how the samples you used were selected to form your cohort and also to provide cohort descriptive statistics. In methodologic papers, the ``Table 1'' describing the population by covariate summary statistics goes here. In application papers, ``Table 1'' leads the Results Section. Relevant information about the study design, such how cases and controls were identified, goes here. See Section \ref{results} for an example of how to build a table in LaTeX.
+The MIMIC III database contains over 40,000 patients' records and related health information. Since this study focuses on the patients who have general surgery and stay in ICU at the time of recording, only patients who have "ICU" as the cost center and "SURG" (which represents general surgery, other specific categories of surgery are marked respectively) as the current service. After selection, only 3580 patients are left. 
+
+\begin{table}[htbp]
+  \centering 
+  \begin{tabular}{|c|c|c|c|c|c|c|} 
+    Gender & Outcome (\%) & RR & O2 Saturation(\%) & Temp(F) & Systolic BP & HR\\ 
+    \hline \\[-11pt]
+    Female & Survival: 954 (61.5\%) & 18.72 & 89.07 & 98.33 & 115.81 & 87.81\\ 
+    1551 & Death: 597 (38.5\%) & 19.56 & 90.93 & 97.86 & 116.80 & 87.95\\ 
+    Male & Survival: 1164 (57.4\%) & 18.31 & 88.92 & 98.50 & 116.80 & 87.95\\
+    2029 & Death: 865 (42.6\%) & 19.59 & 91.69 & 98.11 & 107.46 & 88.06\\ \hline 
+  \end{tabular}
+\end{table}
 
 \subsection{Data Extraction} 
-Describe the pipeline from raw data to processed data. Figures can be helpful. What assumptions did you make? How did you deal with missing data? Do not place interpretations here except possibly for short justification phrases. Longer discussions about the assumption you made go in the Discussion Section.
+All datasets are downloaded from MIMIC III database and are in different spreadsheets of topics. Basic sql queries are used to link them. Since each patient has multiple admission records and each is related to general surgery, in order to predict the mortality after surgery, only the most recent admission is kept. And all other patient information is only kept for this most recent admission record. Each patient's admission has an ICD-9 Diagnosis code indicating the diagnosis. They are transformed into 19 groups using the first 3 digitd of ICD-9 code based on the ICD-9 diagnositic groups, making such data more informative.
 
 \subsection{Feature Choices} 
-What features were used? What conversions were necessary? What assumptions (e.g. i.i.d.) are made? with how you might have converted the raw data into features that were used in your algorithm. 
+Features used in the model are mainly based on protocols used in the postoperative care. We want to know which medication and what physiology of patient are useful indicators of post-surgery death. Therefore, top 10 medications with highest prescription frequency are selected. They are Lactated Ringers ("LR1000"), Insulin ("INSULIN"), Furosemide ("FURO40I"), Magnesium Sulfate ("MAG2PM"), Sodium Chloride 0.9\% Flush ("NACLFLUSH"), Metoprolol ("METO5I"), Depakote 500 mg ("NS500"), 250 cc of 5 \% dextrose solution ("D5W250"), Depakote 250 mg ("NS250"), and Depakote 1000 mg ("NS1000"). And the medications are trandsormed into a set of vectors with binary value indicating whether each patient has had such drug. And the patient's physiologies that matter in postoperative care are: respiratory rate ("RR"), oxygen saturation ("SPO2"), temperature ("T"), systolic blood pressure ("BP"), pulse rate, and level of consciousness, according to the National Early Warning Score (NEWS Score) \citet{cite6}. Due to the few record size of pulse rate and the difficulty to categorize consciousness level from the raw data, the last two physiologies are not included in this study. The other 4 physiologies have abundant data in the chartevent table, which means they are recoreded several times within each admission. The mean value of each physiology is calculated as the feature value. 
 
-\subsection{Comparison Methods}
-To evaluate your model, often times you will compare against existing models.
-If so, include them here with a brief description, citation, and any tweaks you made for your experiment.
+After checking the missing pattern of each colomn, colomns with over 50\% missing values and patients with over 5 missing items are dropped. And the remaining missing values are all the averaged physiologies in the previous feature selection step instead of direct records in raw data, so they are missing at random. R package "amelia" is used to impute the missing value for the remaining dataset, with 5 folds. However, after imputation, there are still 61 patients with less than 2 missing values unable to be imputed, so they are dropped.
 
-\subsection{Evaluation Criteria}
-Evaluation methods belong here as well.
-Perhaps you used accuracy and the AUROC--explain why these are most useful measures of the outcome.
+\subsection{Evaluation Criteria and Method Comparison}
+Since the existing models used to predict the mortality each focuses on a specific disease or condition and the models built in this study are more general and relatively novel in providing general guidance for postoperative care, models in this study are not compared to existing models. Instead, the models themselves are compared against each other to evaluate the performance, by using accuracy, ROC curve, and PR curve.
 
 \section{Results} \label{results}
 

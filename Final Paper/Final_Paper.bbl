@@ -1,4 +1,4 @@
-\begin{thebibliography}{5}
+\begin{thebibliography}{6}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -10,6 +10,11 @@ Quickstats: Death rate* from complications of medical and surgical care among
   adults aged ≥45 years, by age group --- united states, 1999--2009, Sep
   2012.
 \newblock URL \url{https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6137a6.htm}.
+
+\bibitem[cit(2015)]{cite6}
+National early warning score (news), May 2015.
+\newblock URL
+  \url{https://www.rcplondon.ac.uk/projects/outputs/national-early-warning-score-news}.
 
 \bibitem[cit(2016)]{cite1}
 Mimic-iii v1.4 documentation, 2016.

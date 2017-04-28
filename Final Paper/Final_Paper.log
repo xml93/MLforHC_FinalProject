@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  28 APR 2017 09:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  28 APR 2017 13:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -269,12 +269,12 @@ LaTeX Info: Redefining \nameref on input line 23.
 
  [1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
-] <fig1.png, id=85, 581.17125pt x 391.4625pt>
+] <fig1.png, id=81, 581.17125pt x 391.4625pt>
 File: fig1.png Graphic file (type png)
 
 <use fig1.png>
 Package pdftex.def Info: fig1.png used on input line 55.
-(pdftex.def)             Requested size: 426.79659pt x 284.54073pt.
+(pdftex.def)             Requested size: 341.43372pt x 227.62183pt.
 Missing character: There is no â in font cmr10!
 Missing character: There is no ‰ in font cmr10!
 Missing character: There is no ¥ in font cmr10!
@@ -287,58 +287,74 @@ Missing character: There is no ¥ in font cmr10!
 Missing character: There is no â in font cmr10!
 Missing character: There is no € in font cmr10!
 Missing character: There is no ” in font cmr10!
- [2 <./fig1.png>]
-LaTeX Font Info:    Try loading font information for U+msa on input line 69.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [2 <./fig1.png>] <fig2.png, id=90, 290.08376pt x 280.04625pt>
+File: fig2.png Graphic file (type png)
+ <use fig2.png>
+Package pdftex.def Info: fig2.png used on input line 67.
+(pdftex.def)             Requested size: 199.17093pt x 199.17607pt.
+
+<fig3.png, id=91, 292.84406pt x 266.49562pt>
+File: fig3.png Graphic file (type png)
+ <use fig3.png>
+Package pdftex.def Info: fig3.png used on input line 75.
+(pdftex.def)             Requested size: 199.176pt x 199.17586pt.
+LaTeX Font Info:    Try loading font information for U+msa on input line 79.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 69.
+LaTeX Font Info:    Try loading font information for U+msb on input line 79.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-Underfull \vbox (badness 10000) has occurred while \output is active []
+) [3 <./fig2.png> <./fig3.png>]
+Overfull \hbox (28.83995pt too wide) in paragraph at lines 94--102
+ [][] 
+ []
 
- [3]
-<smile.jpeg, id=106, 91.34125pt x 91.34125pt>
+[4] <smile.jpeg, id=111, 91.34125pt x 91.34125pt>
 File: smile.jpeg Graphic file (type jpg)
  <use smile.jpeg>
-Package pdftex.def Info: smile.jpeg used on input line 127.
+Package pdftex.def Info: smile.jpeg used on input line 145.
 (pdftex.def)             Requested size: 108.405pt x 108.41031pt.
- [4 <./smile.jpeg>] (./Final_Paper.bbl
+ [5]
+(./Final_Paper.bbl
 Missing character: There is no â in font cmr10!
 Missing character: There is no ‰ in font cmr10!
 Missing character: There is no ¥ in font cmr10!
-)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 158.
- [5]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 158.
+ [6 <./smile.jpeg>])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 176.
+ [7]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 176.
  (./Final_Paper.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 158.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 158.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 176.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 176.
 Package rerunfilecheck Info: File `Final_Paper.out' has not changed.
-(rerunfilecheck)             Checksum: 868979BA62D9B97C668FB6913E8FA752;828.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 158.
+(rerunfilecheck)             Checksum: 487AAE6221AE387BA4DCBE9941EFC7B8;863.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 176.
  ) 
 Here is how much of TeX's memory you used:
- 5857 strings out of 493014
- 84846 string characters out of 6133351
- 169527 words of memory out of 5000000
- 9320 multiletter control sequences out of 15000+600000
+ 5875 strings out of 493014
+ 85023 string characters out of 6133351
+ 172752 words of memory out of 5000000
+ 9332 multiletter control sequences out of 15000+600000
  11275 words of font info for 42 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,7n,28p,1118b,319s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 41i,7n,28p,1416b,435s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb>
-</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></
-usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></u
-sr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on Final_Paper.pdf (5 pages, 251736 bytes).
+</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+/usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
+sr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></us
+r/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on Final_Paper.pdf (7 pages, 285953 bytes).
 PDF statistics:
- 151 PDF objects out of 1000 (max. 8388607)
- 133 compressed objects within 2 object streams
- 30 named destinations out of 1000 (max. 500000)
- 123 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 169 PDF objects out of 1000 (max. 8388607)
+ 145 compressed objects within 2 object streams
+ 34 named destinations out of 1000 (max. 500000)
+ 125 words of extra memory for PDF output out of 10000 (max. 10000000)
 

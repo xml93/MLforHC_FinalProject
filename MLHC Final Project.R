@@ -385,4 +385,15 @@ PR <- rbind(PR.lr, PR.nb, PR.tan, PR.dt, PR.rf)
 ggplot(data = PR, aes(x = x, y = y, color = factor(method))) +
   geom_point(size = 0.01) + xlim(0, 1) +
   xlab("Recall") + ylab("Precision")
+
+
+
+# Some codes for paper use
+# Cohort Stat
+table(df$GENDER, df$EXPIRE_FLAG)
+aggregate(RR ~ GENDER + EXPIRE_FLAG, data = df, FUN = mean)
+aggregate(SPO2 ~ GENDER + EXPIRE_FLAG, data = df, FUN = mean)
+aggregate(T ~ GENDER + EXPIRE_FLAG, data = df, FUN = mean)
+aggregate(BP ~ GENDER + EXPIRE_FLAG, data = df, FUN = mean)
+aggregate(HR ~ GENDER + EXPIRE_FLAG, data = df, FUN = mean)
 dt.report
