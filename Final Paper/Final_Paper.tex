@@ -71,8 +71,8 @@ After training and testing all models, they are evaluated based on the accuracy 
 
 \begin{figure}[htbp]
   \centering 
-  \caption{PR Curve; source: https://www.quora.com/What-is-Precision-Recall-PR-curve}
   \includegraphics[height=7cm, width=7cm]{fig3} 
+  \caption{PR Curve; source: https://www.quora.com/What-is-Precision-Recall-PR-curve}
   \label{fig3} 
 \end{figure} 
 
@@ -104,6 +104,13 @@ The MIMIC III database contains over 40,000 patients' records and related health
 \subsection{Data Extraction} 
 All datasets are downloaded from MIMIC III database and are in different spreadsheets of topics. Basic sql queries are used to link them. Since each patient has multiple admission records and each is related to general surgery, in order to predict the mortality after surgery, only the most recent admission is kept. And all other patient information is only kept for this most recent admission record. Each patient's admission has an ICD-9 Diagnosis code indicating the diagnosis. They are transformed into 19 groups using the first 3 digitd of ICD-9 code based on the ICD-9 diagnositic groups, making such data more informative.
 
+\begin{figure}[htbp]
+  \centering 
+  \includegraphics[height=8cm, width=8cm]{fig4}
+  \caption{ICD-9 Diagnosis Group}
+  \label{fig4} 
+\end{figure} 
+
 \subsection{Feature Choices} 
 Features used in the model are mainly based on protocols used in the postoperative care. We want to know which medication and what physiology of patient are useful indicators of post-surgery death. Therefore, top 10 medications with highest prescription frequency are selected. They are Lactated Ringers ("LR1000"), Insulin ("INSULIN"), Furosemide ("FURO40I"), Magnesium Sulfate ("MAG2PM"), Sodium Chloride 0.9\% Flush ("NACLFLUSH"), Metoprolol ("METO5I"), Depakote 500 mg ("NS500"), 250 cc of 5 \% dextrose solution ("D5W250"), Depakote 250 mg ("NS250"), and Depakote 1000 mg ("NS1000"). And the medications are trandsormed into a set of vectors with binary value indicating whether each patient has had such drug. And the patient's physiologies that matter in postoperative care are: respiratory rate ("RR"), oxygen saturation ("SPO2"), temperature ("T"), systolic blood pressure ("BP"), pulse rate, and level of consciousness, according to the National Early Warning Score (NEWS Score) \citet{cite6}. Due to the few record size of pulse rate and the difficulty to categorize consciousness level from the raw data, the last two physiologies are not included in this study. The other 4 physiologies have abundant data in the chartevent table, which means they are recoreded several times within each admission. The mean value of each physiology is calculated as the feature value. 
 
@@ -114,40 +121,36 @@ Since the existing models used to predict the mortality each focuses on a specif
 
 \section{Results} \label{results}
 
-Present the results here.
-Do not describe how the results were obtained.
-Those descriptions belong in Section \ref{experiment}.
-
-Typically there are multiple parts and subparts of your study.
-Use subsections to report the results.
-
-\subsection{Results on Application A} 
-
-Give us some numbers about how well your method works, especially in comparison to some baselines.
-You should provide a summary of the results in the text, as well as in tables (such as table~\ref{tab:example}) and figures (such as figure~\ref{fig:example}).  
-
-You may use subfigures/wrapfigures (LaTeX packages) so that figures don't have to span the whole page or multiple figures are side by side.
-
-\begin{table}[htbp]
-  \centering 
-  \begin{tabular}{lclc} 
-    Method & Outcome (\%) \\ 
-    \hline \\[-11pt]
-    Us & 20.1 \\ 
-    Baseline & 18.2 \\ \hline 
-  \end{tabular}
-  \label{tab:example} 
-    \caption{Outcome by method used. These are our results.} 
-\end{table}
+\subsection{Results on Logistic Regression} 
+After 2 rounds of training the Logistic Regression model, the final model has the features and importance as plotted below.
 
 \begin{figure}[htbp]
   \centering 
-  \includegraphics[width=1.5in]{smile.jpeg} 
-  \caption{Example smile graphic.}
-  \label{fig:example} 
+  \includegraphics[height=7cm, width=14cm]{fig5} 
+  \caption{The variable importance in predicting mortality}
+  \label{fig5} 
 \end{figure} 
 
-\subsection{Results on Application B} 
+From the plot we can know that the importance of all variables in this model is not very high, which means that they are not very useful in predicting the outcome. How these variables contribute to the postoperative mortality are listed below.
+
+\begin{table}[htbp]
+  \centering 
+  \begin{tabular}{|c|c|c|} 
+     Coef & Estimate & p-value\\ 
+    \hline \\[-11pt]
+    Intercept & 19.608118 & 0.000711\\ 
+    Endocrine, Nutritional, Metabolic, Immunity & -1.664949 & 0.000167\\ 
+    Circulatory System & -0.996860 & 0.000165\\
+    Digestive System & -1.023103 & 0.00000026\\
+    RR & 0.084609 & 0.0000004\\ 
+    SPO2 & 0.079917 & 0\\
+    T & -0.285080 & 0.000002\\ \hline 
+  \end{tabular}
+\end{table}
+
+Based on this model, features of the patient's resporitory rate, oxygen saturation, temperature, and whether the patient's diagnosis is related to Endocrine, Nutritional, Metabolic, Immunity / Circulatory System / Digestive System are of significance in predicting post-surgery death.
+
+\subsection{Results on Naive Bayes} 
 
 Did more than one experiment type?
 

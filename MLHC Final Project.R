@@ -12,6 +12,8 @@ library(randomForest)
 library(caret)
 library(ROCR)
 
+options(scipen=999)
+
 # Load tables with needed data
 adm <- data.frame(read.csv(file = "/Users/Xinmi/git/MLforHC_FinalProject/adm.csv", header = TRUE))
 adm.original <- data.frame(read.csv(file = "/Users/Xinmi/git/MLforHC_FinalProject/ADMISSIONS.csv", header = TRUE))
