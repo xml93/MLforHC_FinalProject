@@ -212,20 +212,16 @@ Here Random Forest uses 1000 as the number of trees and have votes on all trees 
 Based on accuracy, Naive Bayes and Decision Tree outperform other models since they have a higher accuracy and also confidence interval. However, when looking at the ROC and PR curves, Logistic Reggression has the curve dominates other algorithms. Logistic Regression also has a relatively high accuracy. Combining the three measures, Logistic Regression is an effective model to predict post-surgery death and the features selected in this model are useful indicators.
 
 \section{Discussion and Related Work} 
+Compared to other models built on MIMIC data, this model is more shallow but more widely applicable. With no focus on specific conditions, it can serve as a reference for nurses to check the patient's physiologies and medications in postoperative care. Though not robust as other models are, this model provides an insight on what kind of patient information should be pay special attention to and what kind of data-driven models could be used to forecast the patient outcome after surgery.
 
-
+However, this study has many notable limitations that deserve concern. First is the feature selection issue. For patient information, age is not included in the data, since it is shifted for confidential purposes. To simplify the study, age is excluded from analysis. And the features selected for this model are completely dependent on medical knowledge, that is, the features are all considered of significance in general madical protocols. In this way, this model is more a proof of existing medical professional sugestions than a new method completely relying on machine learning. Second, the model is too general and could be not as reliable as other specific models. No matter the surgery itself or the death related to surgery, they are highly relevent to the diagnosis. Although several diagnosis groups are proved to be an important contributor to death, it appears that comparing mortality across diseases makes little sense. Third, the raw data itself is not perfect for analysis. MIMIC III database is super huge and has data collected from different source systems, such as CareVue and MetaVision. Different systems sometimes use different coding methods for the same item which are not interoperable. Dealing with such data is a complicated issue, and to simplify the study, some of such items are not included. And there are also some apparent errors on raw data when combining them into MIMIC database, such as the over 90 patient's temperature in Celcius degrees. Besides, MIMIC data is collected from one single hospital. The model's applicability to other patients with different demographic backgrounds needs further research.
 
 \section{Conclusion} 
-Summarize your work one more time, this time assuming the reader has read your paper.
-Build suspense for what your next extension to this method would be.
+In conclusion, this model provides a non-condition-specific method to forecast the postoperative mortality for ICU patients who have general surgery. With this model and the indicators suggested in the model, postoperative care can be better managed and patients are more likely to have better outcomes with lower risk of death.
 
 % ACKNOWLEDGEMENTS ONLY GO IN THE CAMERA-READY, NOT THE SUBMISSION
 % \acks{Many thanks to all collaborators and funders!}
 
 \bibliography{citation}
-
-\appendix
-\section*{Appendix A.}
-Some more details about those methods, so we can actually reproduce them.
 
 \end{document}
