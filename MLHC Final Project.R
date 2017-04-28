@@ -4,10 +4,13 @@ library(dplyr)
 library(ggplot2)
 library(data.table)
 library(mice)
+library(Amelia)
 library(bnlearn)
 library(rpart)
 library(rpart.plot)
 library(randomForest)
+library(caret)
+library(ROCR)
 
 # Load tables with needed data
 adm <- data.frame(read.csv(file = "/Users/Xinmi/git/MLforHC_FinalProject/adm.csv", header = TRUE))
@@ -191,7 +194,30 @@ lr <- glm(EXPIRE_FLAG == 1 ~ .,
           family=binomial(link="logit"), data = train2)
 summary(lr)
 
-predict.lr <- predict(lr, test2)
+# Show and plot variable importance
+imp.lr <- cbind.data.frame(Variable = rownames(varImp(lr)), 
+                           Importance = as.numeric(varImp(lr)$Overall)) %>%
+  arrange(desc(Importance))
+
+ggplot() +
+  geom_point(data = imp.lr, aes(x = Importance, y = Variable), size = 2)
+
+# Select variables that only significant at the 0.05 level.
+lr2 <- glm(EXPIRE_FLAG == 1 ~ ICD9_CODE + RR + SPO2 + T,
+           family=binomial(link="logit"), data = train2)
+summary(lr2)
+
+# Show and plot variable importance
+imp.lr2 <- cbind.data.frame(Variable = rownames(varImp(lr2)), 
+                            Importance = as.numeric(varImp(lr2)$Overall)) %>%
+  arrange(desc(Importance))
+
+ggplot() +
+  geom_point(data = imp.lr2, aes(x = Importance, y = Variable), size = 2)
+
+
+# Test the model
+predict.lr <- predict(lr2, test2)
 
 summary.lr <- as.vector(predict.lr>=0.5) %>%
   table(test2$EXPIRE_FLAG)
@@ -202,8 +228,6 @@ error.lr <- 1 - accuracy.lr
 CI.lr.lower <- accuracy.lr - 1.96 * sqrt(error.lr*accuracy.lr/sum(colSums(summary.lr)))
 CI.lr.upper <- accuracy.lr + 1.96 * sqrt(error.lr*accuracy.lr/sum(colSums(summary.lr)))
 
-lr.report <- data.frame(accuracy.lr, CI.lr.lower, CI.lr.upper)
-lr.report
 
 
 # Naive Bayes
@@ -211,6 +235,7 @@ nb <- naive.bayes(train.d2, "EXPIRE_FLAG")
 fitted.nb <- bn.fit(nb, train.d2)
 summary(nb)
 
+# Test the model
 predict.nb <- predict(fitted.nb, test.d2, prob = TRUE)
 
 summary.nb <- predict.nb %>% 
@@ -222,14 +247,13 @@ error.nb <- 1 - accuracy.nb
 CI.nb.lower <- accuracy.nb - 1.96 * sqrt(error.nb*accuracy.nb/sum(colSums(summary.nb)))
 CI.nb.upper <- accuracy.nb + 1.96 * sqrt(error.nb*accuracy.nb/sum(colSums(summary.nb)))
 
-nb.report <- data.frame(accuracy.nb, CI.nb.lower, CI.nb.upper)
-nb.report
 
 # Tree Augmented Naive Bayes
 tan <- tree.bayes(train.d2, "EXPIRE_FLAG")
 fitted.tan <- bn.fit(tan, train.d2)
 summary(tan)
 
+# Test the model
 predict.tan <- predict(fitted.tan, test.d2, prob = TRUE)
 
 summary.tan <- predict.tan %>% 
@@ -241,8 +265,6 @@ error.tan <- 1 - accuracy.tan
 CI.tan.lower <- accuracy.tan - 1.96 * sqrt(error.tan*accuracy.tan/sum(colSums(summary.tan)))
 CI.tan.upper <- accuracy.tan + 1.96 * sqrt(error.tan*accuracy.tan/sum(colSums(summary.tan)))
 
-tan.report <- data.frame(accuracy.tan, CI.tan.lower, CI.tan.upper)
-tan.report
 
 # Decision Tree
 # Build the tree with the loosest constraints. 
@@ -257,8 +279,15 @@ printcp(dt2)
 print(dt2)
 plotcp(dt2)
 
-# Plot the tree.
+# Plot the tree and show variable importance
 rpart.plot(dt2)
+imp.dt2 <- cbind.data.frame(Variable = rownames(varImp(dt2)), 
+                            Importance = as.numeric(varImp(dt2)$Overall)) %>%
+  arrange(desc(Importance))
+
+ggplot() +
+  geom_point(data = imp.dt2, aes(x = Importance, y = Variable), size = 2)
+
 
 # Test the model.
 predict.dt <- predict(dt2, test.d2) %>%
@@ -275,8 +304,6 @@ error.dt <- 1 - accuracy.dt
 CI.dt.lower <- accuracy.dt - 1.96 * sqrt(error.dt*accuracy.dt/sum(colSums(summary.dt)))
 CI.dt.upper <- accuracy.dt + 1.96 * sqrt(error.dt*accuracy.dt/sum(colSums(summary.dt)))
 
-dt.report <- data.frame(accuracy.dt, CI.dt.lower, CI.dt.upper)
-dt.report
 
 # Random Forest
 set.seed(123456789)
@@ -294,8 +321,68 @@ error.rf <- 1 - accuracy.rf
 CI.rf.lower <- accuracy.rf - 1.96 * sqrt(error.rf*accuracy.rf/sum(colSums(summary.rf)))
 CI.rf.upper <- accuracy.rf + 1.96 * sqrt(error.rf*accuracy.rf/sum(colSums(summary.rf)))
 
-rf.report <- data.frame(accuracy.rf, CI.rf.lower, CI.rf.upper)
-rf.report
 
+# Model comparison
+# Accuracy
+data.frame(Method = c("Logistic Regression", "Naive Bayes", "Tree Augmented Bayes", 
+                      "Decision Tree", "Random Forest"),
+           Accuracy = c(accuracy.lr, accuracy.nb, accuracy.tan, accuracy.dt, accuracy.rf),
+           CI.Lower = c(CI.lr.lower, CI.nb.lower, CI.tan.lower, CI.dt.lower, CI.rf.lower),
+           CI.Upper = c(CI.lr.upper, CI.nb.upper, CI.tan.upper, CI.dt.upper, CI.rf.upper))
 
+# ROC Curve
+perform.lr <- prediction(predict.lr, test2$EXPIRE_FLAG) %>% 
+  performance("tpr", "fpr")
+ROC.lr <- data.frame(y = perform.lr@y.values[[1]], x = perform.lr@x.values[[1]], 
+                     method = "Logistic Regression")
+perform.nb <- prediction(attr(predict.nb,"prob")[2,], test.d2$EXPIRE_FLAG) %>% 
+  performance("tpr", "fpr")
+ROC.nb <- data.frame(y = perform.nb@y.values[[1]], x = perform.nb@x.values[[1]], 
+                     method = "Naive Bayes")
+perform.tan <- prediction(attr(predict.tan,"prob")[2,], test.d2$EXPIRE_FLAG) %>% 
+  performance("tpr", "fpr")
+ROC.tan <- data.frame(y = perform.tan@y.values[[1]], x = perform.tan@x.values[[1]], 
+                      method = "Tree Augmented Bayes")
+perform.dt <- prediction(predict.dt[,2], test.d2$EXPIRE_FLAG) %>% 
+  performance("tpr", "fpr")
+ROC.dt <- data.frame(y = perform.dt@y.values[[1]], x = perform.dt@x.values[[1]], 
+                     method = "Decision Tree")
+perform.rf <- prediction(rf$votes[,2], test.d2$EXPIRE_FLAG) %>% 
+  performance("tpr", "fpr")  
+ROC.rf <- data.frame(y = perform.rf@y.values[[1]], x = perform.rf@x.values[[1]], 
+                     method = "Random Forest")
+
+ROC <- rbind(ROC.lr, ROC.nb, ROC.tan, ROC.dt, ROC.rf)
+
+ggplot(data = ROC, aes(x = x, y = y, color = factor(method))) +
+  geom_point(size = 0.01) + xlim(0, 1) +
+  xlab("False Positive Rate") + ylab("True Positive Rate")
+
+# PR Curve
+perform2.lr <- prediction(predict.lr, test2$EXPIRE_FLAG) %>% 
+  performance("prec", "rec")
+PR.lr <- data.frame(y = perform2.lr@y.values[[1]], x = perform2.lr@x.values[[1]], 
+                    method = "Logistic Regression")
+perform2.nb <- prediction(attr(predict.nb,"prob")[2,], test.d2$EXPIRE_FLAG) %>% 
+  performance("prec", "rec")
+PR.nb <- data.frame(y = perform2.nb@y.values[[1]], x = perform2.nb@x.values[[1]], 
+                    method = "Naive Bayes")
+perform2.tan <- prediction(attr(predict.tan,"prob")[2,], test.d2$EXPIRE_FLAG) %>% 
+  performance("prec", "rec")
+PR.tan <- data.frame(y = perform2.tan@y.values[[1]], x = perform2.tan@x.values[[1]], 
+                     method = "Tree Augmented Bayes")
+perform2.dt <- prediction(predict.dt[,2], test.d2$EXPIRE_FLAG) %>% 
+  performance("prec", "rec")
+PR.dt <- data.frame(y = perform2.dt@y.values[[1]], x = perform2.dt@x.values[[1]], 
+                    method = "Decision Tree")
+perform2.rf <- prediction(rf$votes[,2], test.d2$EXPIRE_FLAG) %>% 
+  performance("prec", "rec")  
+PR.rf <- data.frame(y = perform2.rf@y.values[[1]], x = perform2.rf@x.values[[1]], 
+                    method = "Random Forest")
+
+PR <- rbind(PR.lr, PR.nb, PR.tan, PR.dt, PR.rf)
+
+ggplot(data = PR, aes(x = x, y = y, color = factor(method))) +
+  geom_point(size = 0.01) + xlim(0, 1) +
+  xlab("Recall") + ylab("Precision")
 dt.report
